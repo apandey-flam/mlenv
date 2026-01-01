@@ -56,7 +56,7 @@ log() {
 vlog() {
   local msg="[DEBUG] $(date '+%Y-%m-%d %H:%M:%S') - $1"
   if [ "$VERBOSE" = true ]; then
-    echo "$msg" | tee -a "$LOG_FILE"
+    echo "$msg" | tee -a "$LOG_FILE" >&2
   else
     echo "$msg" >> "$LOG_FILE"
   fi
@@ -150,6 +150,26 @@ check_gpu() {
 check_requirements_file() {
   if [ -n "$REQUIREMENTS_PATH" ] && [ ! -f "$REQUIREMENTS_PATH" ]; then
     die "Requirements file not found: $REQUIREMENTS_PATH"
+  fi
+}
+
+# -----------------------------
+# Image operations
+# -----------------------------
+pull_image_if_needed() {
+  # Check if image exists locally
+  if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+    vlog "Image already available locally: $IMAGE"
+    return 0
+  fi
+  
+  log "▶ Pulling image: $IMAGE"
+  info "This may take a few minutes on first run..."
+  
+  if docker pull "$IMAGE" 2>&1 | tee -a "$LOG_FILE"; then
+    success "Image pulled successfully"
+  else
+    die "Failed to pull image: $IMAGE. Check credentials with: mlenv login"
   fi
 }
 
@@ -313,6 +333,9 @@ cmd_up() {
       success "Container started"
       ;;
     absent)
+      # Pull image if needed before creating container
+      pull_image_if_needed
+      
       log "▶ Creating container: $CONTAINER_NAME"
       local docker_args
       docker_args="$(build_docker_args)"
