@@ -25,10 +25,10 @@ LOG_DIR="$WORKDIR/.mlenv"
 LOG_FILE="$LOG_DIR/mlenv.log"
 REQUIREMENTS_MARKER="$LOG_DIR/.requirements_installed"
 
-# NGC Authentication
-NGC_CONFIG_DIR="$HOME/.ngc"
-NGC_CONFIG_FILE="$NGC_CONFIG_DIR/config"
-NGC_REGISTRY="nvcr.io"
+# mlenv Authentication
+mlenv_CONFIG_DIR="$HOME/.mlenv"
+mlenv_CONFIG_FILE="$mlenv_CONFIG_DIR/config"
+mlenv_REGISTRY="nvcr.io"
 
 # Port forwarding (comma-separated, e.g., "8888:8888,6006:6006")
 PORTS=""
@@ -80,9 +80,9 @@ die() {
 }
 
 # -----------------------------
-# NGC Authentication
+# mlenv Authentication
 # -----------------------------
-is_ngc_authenticated() {
+is_mlenv_authenticated() {
   # Check if docker is logged into nvcr.io
   if docker info 2>/dev/null | grep -q "Username.*nvcr.io" || \
      grep -q "nvcr.io" ~/.docker/config.json 2>/dev/null; then
@@ -90,19 +90,19 @@ is_ngc_authenticated() {
   fi
   
   # Also check our config file
-  if [ -f "$NGC_CONFIG_FILE" ]; then
+  if [ -f "$mlenv_CONFIG_FILE" ]; then
     return 0
   fi
   
   return 1
 }
 
-check_ngc_auth() {
+check_mlenv_auth() {
   # Check if trying to use private image
   if [[ "$IMAGE" == *"nvcr.io"* ]] && [[ "$IMAGE" != *"/nvidia/"* ]]; then
     # Private image - require authentication
-    if ! is_ngc_authenticated; then
-      error "Private NGC image requires authentication"
+    if ! is_mlenv_authenticated; then
+      error "Private mlenv image requires authentication"
       info "Run: mlenv login"
       return 1
     fi
@@ -110,21 +110,21 @@ check_ngc_auth() {
   return 0
 }
 
-save_ngc_credentials() {
+save_mlenv_credentials() {
   local api_key="$1"
-  mkdir -p "$NGC_CONFIG_DIR"
-  chmod 700 "$NGC_CONFIG_DIR"
+  mkdir -p "$mlenv_CONFIG_DIR"
+  chmod 700 "$mlenv_CONFIG_DIR"
   
-  cat > "$NGC_CONFIG_FILE" <<EOF
-; NVIDIA NGC CLI Configuration
+  cat > "$mlenv_CONFIG_FILE" <<EOF
+; NVIDIA mlenv CLI Configuration
 [CURRENT]
 apikey = $api_key
 format_type = ascii
 org = 
 
 EOF
-  chmod 600 "$NGC_CONFIG_FILE"
-  vlog "NGC credentials saved to $NGC_CONFIG_FILE"
+  chmod 600 "$mlenv_CONFIG_FILE"
+  vlog "mlenv credentials saved to $mlenv_CONFIG_FILE"
 }
 
 # -----------------------------
@@ -289,9 +289,9 @@ cmd_up() {
   check_gpu
   check_requirements_file
   
-  # Check NGC authentication if needed
-  if ! check_ngc_auth; then
-    die "NGC authentication required for private images"
+  # Check mlenv authentication if needed
+  if ! check_mlenv_auth; then
+    die "mlenv authentication required for private images"
   fi
   
   vlog "Configuration:"
@@ -568,33 +568,33 @@ cmd_version() {
 }
 
 cmd_login() {
-  log "▶ NGC Authentication Setup"
+  log "▶ mlenv Authentication Setup"
   echo ""
   
-  info "NVIDIA NGC allows you to access private container images and models"
-  info "You'll need an NGC API key from: https://ngc.nvidia.com/setup/api-key"
+  info "NVIDIA mlenv allows you to access private container images and models"
+  info "You'll need an mlenv API key from: https://mlenv.nvidia.com/setup/api-key"
   echo ""
   
   # Prompt for API key
-  read -p "Enter your NGC API Key: " -s api_key
+  read -p "Enter your mlenv API Key: " -s api_key
   echo ""
   
   if [ -z "$api_key" ]; then
     die "API key cannot be empty"
   fi
   
-  log "▶ Logging into $NGC_REGISTRY..."
+  log "▶ Logging into $mlenv_REGISTRY..."
   
   # Login to Docker registry
-  if echo "$api_key" | docker login "$NGC_REGISTRY" --username '$oauthtoken' --password-stdin >> "$LOG_FILE" 2>&1; then
-    success "Successfully logged into $NGC_REGISTRY"
+  if echo "$api_key" | docker login "$mlenv_REGISTRY" --username '$oauthtoken' --password-stdin >> "$LOG_FILE" 2>&1; then
+    success "Successfully logged into $mlenv_REGISTRY"
     
-    # Save credentials to NGC config
-    save_ngc_credentials "$api_key"
+    # Save credentials to mlenv config
+    save_mlenv_credentials "$api_key"
     
     echo ""
-    success "NGC authentication complete!"
-    info "You can now pull private images from $NGC_REGISTRY"
+    success "mlenv authentication complete!"
+    info "You can now pull private images from $mlenv_REGISTRY"
     echo ""
     info "Example: mlenv up --image nvcr.io/your-org/your-image:tag"
   else
@@ -603,17 +603,17 @@ cmd_login() {
 }
 
 cmd_logout() {
-  log "▶ Logging out of NGC"
+  log "▶ Logging out of mlenv"
   
   # Logout from Docker registry
-  if docker logout "$NGC_REGISTRY" >> "$LOG_FILE" 2>&1; then
-    success "Logged out of $NGC_REGISTRY"
+  if docker logout "$mlenv_REGISTRY" >> "$LOG_FILE" 2>&1; then
+    success "Logged out of $mlenv_REGISTRY"
   fi
   
   # Remove saved credentials
-  if [ -f "$NGC_CONFIG_FILE" ]; then
-    rm -f "$NGC_CONFIG_FILE"
-    success "Removed NGC credentials"
+  if [ -f "$mlenv_CONFIG_FILE" ]; then
+    rm -f "$mlenv_CONFIG_FILE"
+    success "Removed mlenv credentials"
   fi
   
   echo ""
@@ -628,8 +628,8 @@ USAGE:
   mlenv <command> [options]
 
 COMMANDS:
-  login       Authenticate with NGC for private images
-  logout      Remove NGC authentication
+  login       Authenticate with mlenv for private images
+  logout      Remove mlenv authentication
   up          Create/start container
   exec        Open interactive shell (or run command with -c)
   down        Stop container
@@ -659,7 +659,7 @@ OPTIONS (for 'exec' command):
   -c <command>                Execute command instead of interactive shell
 
 EXAMPLES:
-  # First time setup - authenticate with NGC
+  # First time setup - authenticate with mlenv
   mlenv login
 
   # Basic setup
@@ -668,9 +668,9 @@ EXAMPLES:
 
   # Full setup with Jupyter
   mlenv up --requirements requirements.txt --port 8888:8888,6006:6006 --verbose
-  ngc jupyter
+  mlenv jupyter
 
-  # Use private NGC image
+  # Use private mlenv image
   mlenv up --image nvcr.io/your-org/your-private-image:latest
 
   # Run specific command
@@ -683,7 +683,7 @@ EXAMPLES:
   mlenv up --env-file .env --port 8888:8888
   mlenv exec
   # ... do work ...
-  ngc down
+  mlenv down
 
   # Clean old containers
   mlenv clean --containers
@@ -692,7 +692,7 @@ EXAMPLES:
   mlenv clean --all
 
   # Clean restart
-  ngc rm
+  mlenv rm
   mlenv up --force-requirements
 
 CLEAN OPTIONS:
@@ -705,7 +705,7 @@ NOTES:
   • Your code stays on the host (bind-mounted to /workspace)
   • Container name includes directory hash to prevent collisions
   • Requirements are cached (reinstalled only if file changes)
-  • Logs stored in: $LOG_DIR/ngc.log
+  • Logs stored in: $LOG_DIR/mlenv.log
   • Container auto-restarts unless explicitly stopped
 
 EOF
