@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# NGC Installation Test Suite
+# MLEnv Installation Test Suite
 
 set -euo pipefail
 
@@ -26,22 +26,22 @@ test_skip() {
 }
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  NGC Installation Test Suite"
+echo "  MLEnv Installation Test Suite"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
 # Test 1: NGC command exists
 echo "Test 1: NGC command exists"
-if command -v ngc >/dev/null 2>&1; then
-  test_pass "ngc command found in PATH"
+if command -v mlenv >/dev/null 2>&1; then
+  test_pass "mlenv command found in PATH"
 else
-  test_fail "ngc command not found in PATH"
+  test_fail "mlenv command not found in PATH"
 fi
 echo ""
 
 # Test 2: NGC is executable
 echo "Test 2: NGC is executable"
-if [ -x "$(command -v ngc)" ]; then
+if [ -x "$(command -v mlenv)" ]; then
   test_pass "ngc is executable"
 else
   test_fail "ngc is not executable"
@@ -50,10 +50,10 @@ echo ""
 
 # Test 3: NGC help works
 echo "Test 3: NGC help command"
-if ngc help >/dev/null 2>&1; then
-  test_pass "ngc help works"
+if mlenv help >/dev/null 2>&1; then
+  test_pass "mlenv help works"
 else
-  test_fail "ngc help failed"
+  test_fail "mlenv help failed"
 fi
 echo ""
 
@@ -121,10 +121,10 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   cd "$TEST_DIR"
   
   # Test status command
-  if ngc status >/dev/null 2>&1; then
-    test_pass "ngc status works"
+  if mlenv status >/dev/null 2>&1; then
+    test_pass "mlenv status works"
   else
-    test_fail "ngc status failed"
+    test_fail "mlenv status failed"
   fi
   
   # Cleanup
@@ -149,8 +149,8 @@ if [ $TESTS_FAILED -eq 0 ]; then
   echo ""
   echo "Next steps:"
   echo "  1. Create a test project: mkdir ~/ngc-test && cd ~/ngc-test"
-  echo "  2. Start a container: ngc up"
-  echo "  3. Enter the container: ngc exec"
+  echo "  2. Start a container: mlenv up"
+  echo "  3. Enter the container: mlenv exec"
   echo "  4. Try GPU access: nvidia-smi"
   exit 0
 else
