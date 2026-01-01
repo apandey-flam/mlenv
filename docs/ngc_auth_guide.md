@@ -9,21 +9,21 @@ NVIDIA NGC (NVIDIA GPU Cloud) provides access to GPU-optimized containers, model
 ### ✅ No Authentication Required (Public Images)
 ```bash
 # Official NVIDIA images are public
-ngc up --image nvcr.io/nvidia/pytorch:25.12-py3
-ngc up --image nvcr.io/nvidia/tensorflow:24.12-tf2-py3
-ngc up --image nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
+mlenv up --image nvcr.io/nvidia/pytorch:25.12-py3
+mlenv up --image nvcr.io/nvidia/tensorflow:24.12-tf2-py3
+mlenv up --image nvcr.io/nvidia/cuda:12.0.0-devel-ubuntu22.04
 ```
 
 ### 🔐 Authentication Required (Private Images)
 ```bash
 # Organization-specific images
-ngc up --image nvcr.io/your-org/custom-model:v1.0
+mlenv up --image nvcr.io/your-org/custom-model:v1.0
 
 # Private team repositories
-ngc up --image nvcr.io/your-team/research-env:latest
+mlenv up --image nvcr.io/your-team/research-env:latest
 
 # Enterprise NGC content
-ngc up --image nvcr.io/enterprise/private-app:production
+mlenv up --image nvcr.io/enterprise/private-app:production
 ```
 
 ## Step-by-Step Setup
@@ -40,7 +40,7 @@ ngc up --image nvcr.io/enterprise/private-app:production
 
 ```bash
 # Run the login command
-ngc login
+mlenv login
 
 # You'll be prompted:
 # Enter your NGC API Key: 
@@ -62,7 +62,7 @@ Enter your NGC API Key: [hidden]
 ✔ NGC authentication complete!
 ℹ You can now pull private images from nvcr.io
 
-ℹ Example: ngc up --image nvcr.io/your-org/your-image:tag
+ℹ Example: mlenv up --image nvcr.io/your-org/your-image:tag
 ```
 
 ### 3. Verify Authentication
@@ -73,19 +73,19 @@ docker info | grep nvcr.io
 # Should show: Username: $oauthtoken
 
 # Check NGC config file
-cat ~/.ngc/config
+cat ~/.mlenv/config
 # Should show your API key (kept secure)
 
 # Test with a private image
-ngc up --image nvcr.io/your-org/your-image:latest
+mlenv up --image nvcr.io/your-org/your-image:latest
 ```
 
 ## Where Credentials Are Stored
 
-After running `ngc login`, credentials are stored in two places:
+After running `mlenv login`, credentials are stored in two places:
 
 ```bash
-~/.ngc/config
+~/.mlenv/config
 # NGC CLI configuration with API key
 # Permissions: 600 (read/write for user only)
 
@@ -100,18 +100,18 @@ Once authenticated, use private images just like public ones:
 
 ```bash
 # Standard usage
-ngc up --image nvcr.io/your-org/custom-pytorch:v2.1
+mlenv up --image nvcr.io/your-org/custom-pytorch:v2.1
 
 # With additional options
-ngc up \
+mlenv up \
   --image nvcr.io/your-org/research-env:latest \
   --requirements requirements.txt \
   --port 8888:8888 \
   --gpu 0,1
 
 # Different organizations
-ngc up --image nvcr.io/org-a/model-a:v1.0
-ngc up --image nvcr.io/org-b/model-b:v2.0
+mlenv up --image nvcr.io/org-a/model-a:v1.0
+mlenv up --image nvcr.io/org-b/model-b:v2.0
 ```
 
 ## Logout
@@ -119,11 +119,11 @@ ngc up --image nvcr.io/org-b/model-b:v2.0
 To remove NGC credentials:
 
 ```bash
-ngc logout
+mlenv logout
 ```
 
 This will:
-- Remove `~/.ngc/config`
+- Remove `~/.mlenv/config`
 - Logout from `nvcr.io` in Docker
 - You'll need to login again to access private images
 
@@ -135,7 +135,7 @@ This will:
 
 **Solution:**
 ```bash
-ngc login
+mlenv login
 ```
 
 ### Error: "Error response from daemon: Get https://nvcr.io/v2/: unauthorized"
@@ -145,8 +145,8 @@ ngc login
 **Solution:**
 ```bash
 # Logout and login with new key
-ngc logout
-ngc login
+mlenv logout
+mlenv login
 ```
 
 ### Error: "denied: requested access to the resource is denied"
@@ -165,7 +165,7 @@ ngc login
 docker info | grep "Username" | grep nvcr.io
 
 # Method 2: Check NGC config
-cat ~/.ngc/config
+cat ~/.mlenv/config
 
 # Method 3: Try pulling a test image
 docker pull nvcr.io/your-org/test-image:latest
@@ -177,8 +177,8 @@ If you think your credentials are stale:
 
 ```bash
 # Fresh login
-ngc logout
-ngc login
+mlenv logout
+mlenv login
 # Enter new API key
 ```
 
@@ -189,7 +189,7 @@ ngc login
 - Store API keys securely
 - Use different API keys for different machines/users
 - Rotate API keys periodically
-- Keep `~/.ngc/config` permissions at 600
+- Keep `~/.mlenv/config` permissions at 600
 - Logout on shared systems
 
 ### ❌ Don't
@@ -207,16 +207,16 @@ ngc login
 # https://ngc.nvidia.com/setup/api-key
 
 # 2. Each team member authenticates
-ngc login
+mlenv login
 # Paste shared API key
 
 # 3. Everyone can now access private images
-ngc up --image nvcr.io/acme-corp/ml-platform:v3.2 \
+mlenv up --image nvcr.io/acme-corp/ml-platform:v3.2 \
   --requirements requirements.txt \
   --port 8888:8888
 
 # 4. Work with private models
-ngc exec
+mlenv exec
 # Inside container:
 # - Private models accessible
 # - Organization datasets available
@@ -231,16 +231,16 @@ If you work with multiple NGC organizations:
 
 ```bash
 # Login with API key that has access to multiple orgs
-ngc login
+mlenv login
 
 # Use images from different organizations
-ngc up --image nvcr.io/org-alpha/model-a:v1.0
+mlenv up --image nvcr.io/org-alpha/model-a:v1.0
 # Work on project A...
-ngc down
+mlenv down
 
-ngc up --image nvcr.io/org-beta/model-b:v2.0
+mlenv up --image nvcr.io/org-beta/model-b:v2.0
 # Work on project B...
-ngc down
+mlenv down
 ```
 
 **Note:** Your API key must have permissions to all organizations you want to access.
@@ -254,8 +254,8 @@ ngc down
 3. Old keys are automatically revoked
 4. Update all systems with new key:
    ```bash
-   ngc logout
-   ngc login  # Enter new key
+   mlenv logout
+   mlenv login  # Enter new key
    ```
 
 ### Key Permissions

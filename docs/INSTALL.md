@@ -1,4 +1,4 @@
-# NGC Container Manager - Installation Guide
+# MLEnv - ML Environment Manager - Installation Guide
 
 ## Prerequisites
 
@@ -18,8 +18,8 @@ Before installing NGC, ensure you have:
 ### One-Line Install
 ```bash
 # Clone and install
-git clone https://github.com/your-username/ngc-manager.git
-cd ngc-manager
+git clone https://github.com/your-username/mlenv.git
+cd mlenv
 sudo ./install.sh
 ```
 
@@ -31,7 +31,7 @@ That's it! The installer will:
 
 ### Verify Installation
 ```bash
-ngc help
+mlenv help
 ngc --version  # Coming soon
 ```
 
@@ -134,13 +134,13 @@ Expected output:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Test 1: NGC command exists
-✔ ngc command found in PATH
+✔ mlenv command found in PATH
 
 Test 2: NGC is executable
-✔ ngc is executable
+✔ mlenv is executable
 
 Test 3: NGC help command
-✔ ngc help works
+✔ mlenv help works
 
 Test 4: Docker availability
 ✔ Docker command found
@@ -175,7 +175,7 @@ source ~/.bashrc
 ### 3. Verify
 ```bash
 which ngc
-ngc help
+mlenv help
 ```
 
 ## Troubleshooting Installation
@@ -272,22 +272,22 @@ rm ~/.config/fish/completions/ngc.fish  # Fish
 
 # Remove project artifacts (optional)
 cd /path/to/your/project
-rm -rf .ngc/
+rm -rf .mlenv/
 ```
 
 ## Upgrading
 
 ### To Latest Version
 ```bash
-cd ngc-manager
+cd mlenv
 git pull origin main
 sudo ./install.sh --force
 ```
 
 ### Version Check
 ```bash
-ngc help | head -n 1
-# NGC Container Manager - Improved Version
+mlenv help | head -n 1
+# MLEnv - ML Environment Manager - Improved Version
 ```
 
 ## Multi-User Setup
@@ -345,7 +345,7 @@ test:
     - chmod +x install.sh ngc
     - ./install.sh --install-dir ./bin
     - export PATH="./bin:$PATH"
-    - ngc help
+    - mlenv help
 ```
 
 ## Docker-in-Docker Setup
@@ -372,8 +372,8 @@ After installation:
    ```bash
    mkdir ~/test-project
    cd ~/test-project
-   ngc up
-   ngc exec
+   mlenv up
+   mlenv exec
    ```
 
 3. **Setup Your First Project**
@@ -382,23 +382,23 @@ After installation:
    echo "torch==2.1.0" > requirements.txt
    
    # Start container
-   ngc up --requirements requirements.txt --port 8888:8888
+   mlenv up --requirements requirements.txt --port 8888:8888
    
    # Launch Jupyter
-   ngc jupyter
+   mlenv jupyter
    ```
 
 4. **Explore Features**
    ```bash
-   ngc help
-   ngc status
+   mlenv help
+   mlenv status
    ```
 
 ## Getting Help
 
-- **Documentation**: `ngc help` or read `README.md`
+- **Documentation**: `mlenv help` or read `README.md`
 - **Quick Reference**: See `QUICKSTART.md`
-- **Issues**: https://github.com/your-username/ngc-manager/issues
+- **Issues**: https://github.com/your-username/mlenv/issues
 - **Test Installation**: Run `./test-install.sh`
 
 ## System Requirements

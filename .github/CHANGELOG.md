@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to NGC Container Manager will be documented in this file.
+All notable changes to MLEnv - ML Environment Manager will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,14 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial production release
-- **NGC Authentication** - `ngc login` and `ngc logout` commands
+- **NGC Authentication** - `mlenv login` and `mlenv logout` commands
   - Support for private NGC container images
-  - Secure credential storage in `~/.ngc/config`
+  - Secure credential storage in `~/.mlenv/config`
   - Automatic authentication check before pulling private images
   - Docker registry login to `nvcr.io`
-- `ngc version` command to show version information
-- `ngc list` command to show all NGC containers across projects
-- Enhanced `ngc clean` command with options:
+- `mlenv version` command to show version information
+- `mlenv list` command to show all NGC containers across projects
+- Enhanced `mlenv clean` command with options:
   - `--logs` - Clean log files (default)
   - `--containers` - Remove stopped NGC containers
   - `--images` - Remove dangling Docker images
@@ -51,18 +51,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Detailed logging with debug mode
 
 ### Commands
-- `ngc up` - Create/start container with extensive options
-- `ngc exec` - Interactive shell or execute command with `-c`
-- `ngc down` - Stop container
-- `ngc restart` - Quick restart
-- `ngc rm` - Remove container
-- `ngc status` - Container and GPU status
-- `ngc list` - List all NGC containers
-- `ngc jupyter` - Launch Jupyter Lab
-- `ngc logs` - View debug logs
-- `ngc clean` - Remove artifacts with options
-- `ngc version` - Show version info
-- `ngc help` - Comprehensive help
+- `mlenv up` - Create/start container with extensive options
+- `mlenv exec` - Interactive shell or execute command with `-c`
+- `mlenv down` - Stop container
+- `mlenv restart` - Quick restart
+- `mlenv rm` - Remove container
+- `mlenv status` - Container and GPU status
+- `mlenv list` - List all NGC containers
+- `mlenv jupyter` - Launch Jupyter Lab
+- `mlenv logs` - View debug logs
+- `mlenv clean` - Remove artifacts with options
+- `mlenv version` - Show version info
+- `mlenv help` - Comprehensive help
 
 ### Documentation
 - 6 real-world examples (PyTorch, Jupyter, DDP, serving, data processing, TensorFlow)
@@ -109,5 +109,5 @@ See [README.md](README.md#contributing) for contribution guidelines.
 
 ## Support
 
-- Issues: [GitHub Issues](https://github.com/your-username/ngc-manager/issues)
-- Discussions: [GitHub Discussions](https://github.com/your-username/ngc-manager/discussions)
+- Issues: [GitHub Issues](https://github.com/your-username/mlenv/issues)
+- Discussions: [GitHub Discussions](https://github.com/your-username/mlenv/discussions)
