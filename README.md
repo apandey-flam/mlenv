@@ -1,4 +1,4 @@
-# NGC Container Manager
+# MLEnv - ML Environment Manager
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -21,7 +21,7 @@ A production-grade command-line tool for managing NVIDIA GPU-accelerated Docker 
 - **Resource Controls** - Limit CPU, memory, and GPU usage
 - **Multi-Project Support** - Unique container names prevent collisions
 - **User Mapping** - Run as your user, not root (no permission issues)
-- **One-Line Commands** - `ngc jupyter`, `ngc exec -c "train.py"`
+- **One-Line Commands** - `mlenv jupyter`, `mlenv exec -c "train.py"`
 - **Auto-Restart** - Containers survive system reboots
 
 ## 📋 Prerequisites
@@ -40,14 +40,14 @@ docker run --rm --gpus all nvidia/cuda:12.0.0-base-ubuntu22.04 nvidia-smi
 ### Automatic Installation (Recommended)
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/ngc-manager.git
-cd ngc-manager
+git clone https://github.com/your-username/mlenv.git
+cd mlenv
 
 # Run installer (checks prerequisites, installs script + completions)
 sudo ./install.sh
 
 # Verify installation
-ngc help
+mlenv help
 ```
 
 The installer will:
@@ -91,10 +91,10 @@ source ~/.bashrc
 ### Basic Usage
 ```bash
 # Start a container
-ngc up
+mlenv up
 
 # Enter interactive shell
-ngc exec
+mlenv exec
 
 # Run your code (inside container)
 python train.py
@@ -103,7 +103,7 @@ python train.py
 # Container keeps running in background
 
 # Stop when done
-ngc down
+mlenv down
 ```
 
 ### For Private NGC Images
@@ -113,10 +113,10 @@ If you need private container images from NGC:
 # 1. Get API key from https://ngc.nvidia.com/setup/api-key
 
 # 2. Authenticate
-ngc login
+mlenv login
 
 # 3. Use private images
-ngc up --image nvcr.io/your-org/your-private-image:latest
+mlenv up --image nvcr.io/your-org/your-private-image:latest
 ```
 
 **Note:** Public images like `nvcr.io/nvidia/pytorch:25.12-py3` don't require authentication.
@@ -124,10 +124,10 @@ ngc up --image nvcr.io/your-org/your-private-image:latest
 ### With Jupyter Lab
 ```bash
 # Start with port forwarding
-ngc up --port 8888:8888
+mlenv up --port 8888:8888
 
 # Launch Jupyter
-ngc jupyter
+mlenv jupyter
 
 # Open the URL shown in terminal
 # http://localhost:8888/...
@@ -140,8 +140,8 @@ ngc jupyter
 # transformers==4.35.0
 # jupyter==1.0.0
 
-ngc up --requirements requirements.txt --port 8888:8888
-ngc exec
+mlenv up --requirements requirements.txt --port 8888:8888
+mlenv exec
 ```
 
 ## 📚 Usage
@@ -150,21 +150,21 @@ ngc exec
 
 | Command | Description |
 |---------|-------------|
-| `ngc up` | Create/start container |
-| `ngc exec` | Open interactive shell |
-| `ngc down` | Stop container |
-| `ngc restart` | Restart container |
-| `ngc rm` | Remove container (keeps code) |
-| `ngc status` | Show container and GPU status |
-| `ngc jupyter` | Start Jupyter Lab |
-| `ngc logs` | View debug logs |
-| `ngc clean` | Remove NGC artifacts |
-| `ngc help` | Show detailed help |
+| `mlenv up` | Create/start container |
+| `mlenv exec` | Open interactive shell |
+| `mlenv down` | Stop container |
+| `mlenv restart` | Restart container |
+| `mlenv rm` | Remove container (keeps code) |
+| `mlenv status` | Show container and GPU status |
+| `mlenv jupyter` | Start Jupyter Lab |
+| `mlenv logs` | View debug logs |
+| `mlenv clean` | Remove NGC artifacts |
+| `mlenv help` | Show detailed help |
 
-### Options for `ngc up`
+### Options for `mlenv up`
 
 ```bash
-ngc up [OPTIONS]
+mlenv up [OPTIONS]
 
 Options:
   --image <name>              Docker image (default: nvcr.io/nvidia/pytorch:25.12-py3)
@@ -179,18 +179,18 @@ Options:
   --verbose                   Enable verbose output
 ```
 
-### Options for `ngc exec`
+### Options for `mlenv exec`
 
 ```bash
-ngc exec [-c <command>]
+mlenv exec [-c <command>]
 
 Options:
   -c <command>                Execute command instead of interactive shell
 
 Examples:
-  ngc exec                            # Interactive shell
-  ngc exec -c "python train.py"       # Run training script
-  ngc exec -c "pip list | grep torch" # Check installed packages
+  mlenv exec                            # Interactive shell
+  mlenv exec -c "python train.py"       # Run training script
+  mlenv exec -c "pip list | grep torch" # Check installed packages
 ```
 
 ## 💡 Examples
@@ -208,7 +208,7 @@ WANDB_API_KEY=your_api_key_here
 CUDA_VISIBLE_DEVICES=0,1
 
 # Setup environment
-ngc up \
+mlenv up \
   --requirements requirements.txt \
   --env-file .env \
   --port 6006:6006 \
@@ -216,20 +216,20 @@ ngc up \
   --memory 32g
 
 # Start training
-ngc exec -c "python train.py --batch-size 64 --epochs 100"
+mlenv exec -c "python train.py --batch-size 64 --epochs 100"
 
 # Monitor with TensorBoard (in another terminal)
-ngc exec -c "tensorboard --logdir runs --host 0.0.0.0"
+mlenv exec -c "tensorboard --logdir runs --host 0.0.0.0"
 # Open: http://localhost:6006
 ```
 
 ### Example 2: Jupyter Notebook Development
 ```bash
 # Start container with Jupyter port
-ngc up --requirements requirements.txt --port 8888:8888
+mlenv up --requirements requirements.txt --port 8888:8888
 
 # Launch Jupyter Lab
-ngc jupyter
+mlenv jupyter
 
 # Open the provided URL in your browser
 # Notebooks saved in /workspace are automatically synced to host
@@ -238,10 +238,10 @@ ngc jupyter
 ### Example 3: Distributed Training (Multi-GPU)
 ```bash
 # Use all available GPUs
-ngc up --requirements requirements.txt --gpu all
+mlenv up --requirements requirements.txt --gpu all
 
 # Run distributed training
-ngc exec -c "torchrun --nproc_per_node=4 train_ddp.py --config config.yaml"
+mlenv exec -c "torchrun --nproc_per_node=4 train_ddp.py --config config.yaml"
 ```
 
 ### Example 4: Model Inference API
@@ -253,10 +253,10 @@ torch==2.1.0
 transformers==4.35.0
 
 # Start with API port
-ngc up --requirements requirements.txt --port 8000:8000 --gpu 0
+mlenv up --requirements requirements.txt --port 8000:8000 --gpu 0
 
 # Run FastAPI server
-ngc exec -c "uvicorn app:app --host 0.0.0.0 --port 8000"
+mlenv exec -c "uvicorn app:app --host 0.0.0.0 --port 8000"
 
 # API available at http://localhost:8000
 ```
@@ -269,25 +269,25 @@ polars==0.19.0
 dask==2023.10.0
 
 # High CPU/memory, no GPU needed
-ngc up \
+mlenv up \
   --requirements requirements.txt \
   --memory 64g \
   --cpus 16.0 \
   --gpu 0  # Use only one GPU or none
 
 # Process large dataset
-ngc exec -c "python process_data.py --input data/raw --output data/processed"
+mlenv exec -c "python process_data.py --input data/raw --output data/processed"
 ```
 
 ### Example 6: Custom Image (TensorFlow)
 ```bash
 # Use TensorFlow image instead of PyTorch
-ngc up \
+mlenv up \
   --image nvcr.io/nvidia/tensorflow:24.12-tf2-py3 \
   --requirements requirements.txt \
   --port 8888:8888
 
-ngc exec
+mlenv exec
 ```
 
 ## 🔐 NGC Authentication
@@ -312,7 +312,7 @@ ngc exec
 # Click "Generate API Key"
 
 # 2. Login to NGC
-ngc login
+mlenv login
 # Paste your API key when prompted
 
 # 3. Verify authentication
@@ -320,20 +320,20 @@ docker info | grep nvcr.io
 # Should show: Username: $oauthtoken
 
 # 4. Use private images
-ngc up --image nvcr.io/your-org/private-model:latest
+mlenv up --image nvcr.io/your-org/private-model:latest
 ```
 
 ### What Gets Stored?
 
 ```bash
-~/.ngc/config           # NGC API key
+~/.mlenv/config           # NGC API key
 ~/.docker/config.json   # Docker registry credentials
 ```
 
 ### Logout
 
 ```bash
-ngc logout
+mlenv logout
 # Removes NGC credentials and Docker login
 ```
 
@@ -342,19 +342,19 @@ ngc logout
 **"unauthorized: authentication required"**
 ```bash
 # Not logged in, run:
-ngc login
+mlenv login
 ```
 
 **"Error response from daemon: Get https://nvcr.io/v2/: unauthorized"**
 ```bash
 # Expired/invalid API key
-ngc logout
-ngc login  # Enter new key
+mlenv logout
+mlenv login  # Enter new key
 ```
 
 **Check if logged in:**
 ```bash
-cat ~/.ngc/config
+cat ~/.mlenv/config
 # or
 docker info | grep nvcr.io
 ```
@@ -369,7 +369,7 @@ Host Machine                    Docker Container
 │                 │   mount    │                 │
 │  ├── train.py   │            │  ├── train.py   │
 │  ├── data/      │            │  ├── data/      │
-│  └── .ngc/      │            │  └── (GPUs)     │
+│  └── .mlenv/      │            │  └── (GPUs)     │
 └─────────────────┘            └─────────────────┘
         ▲                               │
         └──────────────┬────────────────┘
@@ -381,7 +381,7 @@ Host Machine                    Docker Container
 
 1. **Bind Mounting**: Your project directory is mounted into the container at `/workspace`. Changes are immediately synced both ways.
 
-2. **Container Persistence**: Containers stay running in the background. Stop with `ngc down`, remove with `ngc rm`.
+2. **Container Persistence**: Containers stay running in the background. Stop with `mlenv down`, remove with `mlenv rm`.
 
 3. **Smart Caching**: Requirements are hashed. Reinstalls only happen if the file changes (override with `--force-requirements`).
 
@@ -395,10 +395,10 @@ Host Machine                    Docker Container
 Each directory gets its own container:
 ```bash
 cd /projects/nlp-research
-ngc up  # Creates: ngc-nlp-research-abc123
+mlenv up  # Creates: ngc-nlp-research-abc123
 
 cd /projects/computer-vision  
-ngc up  # Creates: ngc-computer-vision-def456
+mlenv up  # Creates: ngc-computer-vision-def456
 
 # Both can run simultaneously
 ```
@@ -406,13 +406,13 @@ ngc up  # Creates: ngc-computer-vision-def456
 ### Custom Docker Images
 ```bash
 # NVIDIA PyTorch (default)
-ngc up --image nvcr.io/nvidia/pytorch:25.12-py3
+mlenv up --image nvcr.io/nvidia/pytorch:25.12-py3
 
 # NVIDIA TensorFlow
-ngc up --image nvcr.io/nvidia/tensorflow:24.12-tf2-py3
+mlenv up --image nvcr.io/nvidia/tensorflow:24.12-tf2-py3
 
 # Custom image with your base setup
-ngc up --image yourusername/ml-base:latest
+mlenv up --image yourusername/ml-base:latest
 ```
 
 ### Environment Variables
@@ -423,16 +423,16 @@ MODEL_PATH=/workspace/models
 BATCH_SIZE=32
 WANDB_PROJECT=my-experiment
 
-ngc up --env-file .env
+mlenv up --env-file .env
 
 # Access inside container
-ngc exec -c 'echo $API_KEY'
+mlenv exec -c 'echo $API_KEY'
 ```
 
 ### Resource Management
 ```bash
 # Limit resources to share GPU server
-ngc up \
+mlenv up \
   --gpu 0,1 \        # Use only GPUs 0 and 1
   --memory 32g \     # Max 32GB RAM
   --cpus 8.0         # Max 8 CPU cores
@@ -441,13 +441,13 @@ ngc up \
 ### Development + Production Setup
 ```bash
 # Development (with Jupyter, TensorBoard)
-ngc up \
+mlenv up \
   --requirements requirements-dev.txt \
   --port 8888:8888,6006:6006 \
   --verbose
 
 # Production (lean, specific resources)
-ngc up \
+mlenv up \
   --requirements requirements.txt \
   --gpu 0 \
   --memory 16g \
@@ -458,7 +458,7 @@ ngc up \
 
 ### Check Container Status
 ```bash
-ngc status
+mlenv status
 
 # Output:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -475,7 +475,7 @@ ngc status
 ### View Logs
 ```bash
 # NGC manager logs
-ngc logs
+mlenv logs
 
 # Docker container logs
 docker logs ngc-myproject-a3f8c21d
@@ -487,10 +487,10 @@ docker logs -f ngc-myproject-a3f8c21d
 ### GPU Monitoring
 ```bash
 # Inside container
-ngc exec -c "watch -n 1 nvidia-smi"
+mlenv exec -c "watch -n 1 nvidia-smi"
 
 # Or use gpustat
-ngc exec -c "pip install gpustat && gpustat -i 1"
+mlenv exec -c "pip install gpustat && gpustat -i 1"
 ```
 
 ## 🐛 Troubleshooting
@@ -504,8 +504,8 @@ docker info
 docker info | grep -i nvidia
 
 # View detailed logs
-ngc up --verbose
-ngc logs
+mlenv up --verbose
+mlenv logs
 ```
 
 ### GPU not detected
@@ -529,33 +529,33 @@ lsof -ti:8888
 lsof -ti:8888 | xargs kill -9
 
 # Or use a different port
-ngc up --port 8889:8888
+mlenv up --port 8889:8888
 ```
 
 ### Permission denied errors
 ```bash
 # Files created in container have wrong ownership?
 # By default runs as your user, but if you need root:
-ngc up --no-user-mapping
+mlenv up --no-user-mapping
 
 # Fix existing permissions
-ngc exec -c "chown -R $(id -u):$(id -g) /workspace"
+mlenv exec -c "chown -R $(id -u):$(id -g) /workspace"
 ```
 
 ### Requirements won't update
 ```bash
 # Force reinstall
-ngc up --force-requirements
+mlenv up --force-requirements
 
 # Or remove and recreate
-ngc rm
-ngc up --requirements requirements.txt
+mlenv rm
+mlenv up --requirements requirements.txt
 ```
 
 ### Out of memory
 ```bash
 # Check GPU memory
-ngc exec -c "nvidia-smi"
+mlenv exec -c "nvidia-smi"
 
 # Increase shared memory (edit script line 83):
 --shm-size=32g  # default is 16g
@@ -578,7 +578,7 @@ docker rm -f ngc-oldname-12345678
 1. **Use `.gitignore`**:
 ```bash
 # .gitignore
-.ngc/
+.mlenv/
 .env
 *.pth
 *.ckpt
@@ -591,7 +591,7 @@ docker rm -f ngc-oldname-12345678
 4. **Network Isolation**: Ports are only exposed on localhost by default. For remote access, use SSH tunneling:
 ```bash
 # On remote server
-ngc up --port 8888:8888
+mlenv up --port 8888:8888
 
 # On local machine
 ssh -L 8888:localhost:8888 user@remote-server
@@ -607,47 +607,47 @@ my-ml-project/
 ├── ngc                 # This script
 ├── requirements.txt    # Python dependencies
 ├── .env               # Environment variables (gitignored)
-├── .gitignore         # Ignore .ngc/, .env, checkpoints
+├── .gitignore         # Ignore .mlenv/, .env, checkpoints
 ├── train.py           # Training script
 ├── evaluate.py        # Evaluation script
 ├── data/              # Dataset
 ├── models/            # Saved models
 ├── notebooks/         # Jupyter notebooks
-└── .ngc/              # NGC logs (gitignored)
+└── .mlenv/              # NGC logs (gitignored)
     └── ngc.log
 ```
 
 ### Workflow
 ```bash
 # 1. Setup (once per project)
-ngc up --requirements requirements.txt --port 8888:8888
+mlenv up --requirements requirements.txt --port 8888:8888
 
 # 2. Develop
-ngc jupyter  # or ngc exec
+mlenv jupyter  # or mlenv exec
 
 # 3. When done for the day
-ngc down
+mlenv down
 
 # 4. Next day
-ngc up  # Fast startup, requirements cached
-ngc exec
+mlenv up  # Fast startup, requirements cached
+mlenv exec
 
 # 5. Clean slate (if needed)
-ngc rm
-ngc up --force-requirements
+mlenv rm
+mlenv up --force-requirements
 ```
 
 ### Version Control
 ```bash
 # Commit the script with your project
-git add ngc requirements.txt
+git add mlenv requirements.txt
 git commit -m "Add NGC container manager"
 
 # Others can use it
 git clone <your-repo>
 cd <your-repo>
 chmod +x ngc
-./ngc up --requirements requirements.txt
+./mlenv up --requirements requirements.txt
 ```
 
 ## 🚧 Known Limitations
@@ -657,7 +657,7 @@ Current version has a few limitations we're aware of:
 - **No version command** - ~~Can't check installed version~~ ✅ Added in v1.0.0
 - **Manual updates** - No built-in update mechanism (requires git pull + reinstall)
 - **No config file** - Can't set persistent defaults (`.ngcrc` planned)
-- **Basic cleanup** - ~~Old containers need manual removal~~ ✅ Added `ngc clean --containers` in v1.0.0
+- **Basic cleanup** - ~~Old containers need manual removal~~ ✅ Added `mlenv clean --containers` in v1.0.0
 - **Manual completion reload** - Shell completions require terminal restart
 
 **Note:** This tool is designed for Linux systems with NVIDIA GPUs. macOS and Windows native are not supported. Windows users should use WSL2.
@@ -667,15 +667,15 @@ See the [Roadmap](#-roadmap) below for planned improvements.
 ## 🗺️ Roadmap
 
 ### v1.1 (Next Release)
-- [ ] **Auto-update mechanism** - `ngc update` to pull latest version
-- [ ] **Container listing** - ~~`ngc list` to show all NGC containers~~ ✅ Added in v1.0.0
+- [ ] **Auto-update mechanism** - `mlenv update` to pull latest version
+- [ ] **Container listing** - ~~`mlenv list` to show all NGC containers~~ ✅ Added in v1.0.0
 - [ ] **Enhanced status** - Show resource usage (CPU, memory, GPU utilization)
 - [ ] **Better error messages** - Contextual help and suggestions
 
 ### v1.2 (Planned)
 - [ ] **Config file support** - `~/.ngcrc` for default settings
-- [ ] **Project templates** - `ngc init --template pytorch|tensorflow|transformers`
-- [ ] **Auto GPU detection** - `ngc up --auto-gpu` to find free GPUs
+- [ ] **Project templates** - `mlenv init --template pytorch|tensorflow|transformers`
+- [ ] **Auto GPU detection** - `mlenv up --auto-gpu` to find free GPUs
 - [ ] **Better testing** - Full integration test suite
 
 ### v2.0 (Future)
@@ -696,13 +696,13 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ### Development Setup
 ```bash
-git clone https://github.com/your-username/ngc-manager.git
-cd ngc-manager
+git clone https://github.com/your-username/mlenv.git
+cd mlenv
 chmod +x ngc
 
 # Test locally
-./ngc up --verbose
-./ngc status
+./mlenv up --verbose
+./mlenv status
 ```
 
 ### Priority Areas
@@ -724,8 +724,8 @@ MIT License - see LICENSE file for details
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-username/ngc-manager/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-username/ngc-manager/discussions)
+- **Issues**: [GitHub Issues](https://github.com/your-username/mlenv/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/your-username/mlenv/discussions)
 - **Documentation**: See `QUICKSTART.md` and `IMPROVEMENTS.md`
 
 ## 🔗 Related Projects

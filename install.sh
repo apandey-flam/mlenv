@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # =============================================================================
-# NGC Container Manager - Installer
+# MLEnv - ML Environment Manager - Installer
 # =============================================================================
 
 VERSION="1.0.0"
-SCRIPT_NAME="ngc"
+SCRIPT_NAME="mlenv"
 INSTALL_DIR="/usr/local/bin"
 CUSTOM_INSTALL_DIR=""
 COMPLETION_DIR=""
@@ -166,14 +166,14 @@ create_bash_completion() {
   cat <<'EOF'
 # Bash completion for ngc
 
-_ngc_completion() {
+_mlenv_completion() {
     local cur prev opts
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
     
     # Main commands
-    local commands="up exec down restart rm status jupyter logs clean help"
+    local commands="login logout up exec down restart rm status list jupyter logs clean version help"
     
     # Options for up command
     local up_opts="--image --requirements --force-requirements --port --gpu --env-file --memory --cpus --no-user-mapping --verbose"
@@ -220,7 +220,7 @@ _ngc_completion() {
     return 0
 }
 
-complete -F _ngc_completion ngc
+complete -F _mlenv_completion ngc
 EOF
 }
 
@@ -228,18 +228,22 @@ create_zsh_completion() {
   cat <<'EOF'
 #compdef ngc
 
-_ngc() {
+_mlenv() {
     local -a commands
     commands=(
+        'login:Authenticate with NGC'
+        'logout:Remove NGC authentication'
         'up:Create/start container'
         'exec:Open interactive shell'
         'down:Stop container'
         'restart:Restart container'
         'rm:Remove container'
         'status:Show container status'
+        'list:List all NGC containers'
         'jupyter:Start Jupyter Lab'
         'logs:View debug logs'
         'clean:Remove NGC artifacts'
+        'version:Show version'
         'help:Show help'
     )
     
@@ -280,31 +284,35 @@ create_fish_completion() {
 # Fish completion for ngc
 
 # Commands
-complete -c ngc -f -n '__fish_use_subcommand' -a 'up' -d 'Create/start container'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'exec' -d 'Open interactive shell'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'down' -d 'Stop container'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'restart' -d 'Restart container'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'rm' -d 'Remove container'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'status' -d 'Show container status'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'jupyter' -d 'Start Jupyter Lab'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'logs' -d 'View debug logs'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'clean' -d 'Remove NGC artifacts'
-complete -c ngc -f -n '__fish_use_subcommand' -a 'help' -d 'Show help'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'login' -d 'Authenticate with NGC'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'logout' -d 'Remove NGC authentication'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'up' -d 'Create/start container'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'exec' -d 'Open interactive shell'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'down' -d 'Stop container'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'restart' -d 'Restart container'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'rm' -d 'Remove container'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'status' -d 'Show container status'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'list' -d 'List all NGC containers'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'jupyter' -d 'Start Jupyter Lab'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'logs' -d 'View debug logs'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'clean' -d 'Remove NGC artifacts'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'version' -d 'Show version'
+complete -c mlenv -f -n '__fish_use_subcommand' -a 'help' -d 'Show help'
 
 # Options for 'up' command
-complete -c ngc -n '__fish_seen_subcommand_from up' -l image -d 'Docker image' -r
-complete -c ngc -n '__fish_seen_subcommand_from up' -l requirements -d 'Requirements file' -r -F
-complete -c ngc -n '__fish_seen_subcommand_from up' -l force-requirements -d 'Force reinstall'
-complete -c ngc -n '__fish_seen_subcommand_from up' -l port -d 'Port forwarding' -r
-complete -c ngc -n '__fish_seen_subcommand_from up' -l gpu -d 'GPU devices' -r -a 'all 0 1 0,1'
-complete -c ngc -n '__fish_seen_subcommand_from up' -l env-file -d 'Environment file' -r -F
-complete -c ngc -n '__fish_seen_subcommand_from up' -l memory -d 'Memory limit' -r -a '8g 16g 32g 64g'
-complete -c ngc -n '__fish_seen_subcommand_from up' -l cpus -d 'CPU limit' -r -a '2.0 4.0 8.0 16.0'
-complete -c ngc -n '__fish_seen_subcommand_from up' -l no-user-mapping -d 'Run as root'
-complete -c ngc -n '__fish_seen_subcommand_from up' -l verbose -d 'Verbose output'
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l image -d 'Docker image' -r
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l requirements -d 'Requirements file' -r -F
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l force-requirements -d 'Force reinstall'
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l port -d 'Port forwarding' -r
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l gpu -d 'GPU devices' -r -a 'all 0 1 0,1'
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l env-file -d 'Environment file' -r -F
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l memory -d 'Memory limit' -r -a '8g 16g 32g 64g'
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l cpus -d 'CPU limit' -r -a '2.0 4.0 8.0 16.0'
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l no-user-mapping -d 'Run as root'
+complete -c mlenv -n '__fish_seen_subcommand_from up' -l verbose -d 'Verbose output'
 
 # Options for 'exec' command
-complete -c ngc -n '__fish_seen_subcommand_from exec' -s c -d 'Command to execute' -r
+complete -c mlenv -n '__fish_seen_subcommand_from exec' -s c -d 'Command to execute' -r
 EOF
 }
 
@@ -469,7 +477,7 @@ do_install() {
   local shell_type="$(detect_shell)"
   
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "  NGC Container Manager - Installer v${VERSION}"
+  echo "  MLEnv - ML Environment Manager - Installer v${VERSION}"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
   
@@ -519,7 +527,7 @@ do_uninstall() {
   local shell_type="$(detect_shell)"
   
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "  NGC Container Manager - Uninstaller"
+  echo "  MLEnv - ML Environment Manager - Uninstaller"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
   
@@ -538,7 +546,7 @@ do_uninstall() {
 
 do_check() {
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "  NGC Container Manager - System Check"
+  echo "  MLEnv - ML Environment Manager - System Check"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   echo ""
   
@@ -557,7 +565,7 @@ do_check() {
 # -----------------------------
 show_help() {
   cat <<EOF
-NGC Container Manager - Installer
+MLEnv - ML Environment Manager - Installer
 
 USAGE:
   ./install.sh [options]

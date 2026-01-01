@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # =============================================================================
-# NGC Container Manager - Improved Version
+# MLEnv - ML Environment Container Manager
 # Version: 1.0.0
 # =============================================================================
 
@@ -20,9 +20,9 @@ WORKDIR="$(pwd)"
 PROJECT_NAME="$(basename "$WORKDIR")"
 # Use hash to prevent naming collisions across directories
 WORKDIR_HASH="$(echo "$WORKDIR" | md5sum | cut -c1-8)"
-CONTAINER_NAME="ngc-${PROJECT_NAME}-${WORKDIR_HASH}"
-LOG_DIR="$WORKDIR/.ngc"
-LOG_FILE="$LOG_DIR/ngc.log"
+CONTAINER_NAME="mlenv-${PROJECT_NAME}-${WORKDIR_HASH}"
+LOG_DIR="$WORKDIR/.mlenv"
+LOG_FILE="$LOG_DIR/mlenv.log"
 REQUIREMENTS_MARKER="$LOG_DIR/.requirements_installed"
 
 # NGC Authentication
@@ -103,7 +103,7 @@ check_ngc_auth() {
     # Private image - require authentication
     if ! is_ngc_authenticated; then
       error "Private NGC image requires authentication"
-      info "Run: ngc login"
+      info "Run: mlenv login"
       return 1
     fi
   fi
@@ -277,7 +277,7 @@ install_requirements() {
     md5sum "$REQUIREMENTS_PATH" | cut -d' ' -f1 > "$REQUIREMENTS_MARKER"
     success "Requirements installed"
   else
-    die "Failed to install requirements. Check logs: ngc logs"
+    die "Failed to install requirements. Check logs: mlenv logs"
   fi
 }
 
@@ -320,7 +320,7 @@ cmd_up() {
       if eval docker run $docker_args >> "$LOG_FILE" 2>&1; then
         success "Container created and started"
       else
-        die "Failed to create container. Check logs: ngc logs"
+        die "Failed to create container. Check logs: mlenv logs"
       fi
       ;;
   esac
@@ -335,14 +335,14 @@ cmd_up() {
   if [ -n "$PORTS" ]; then
     info "Ports forwarded: $PORTS"
   fi
-  info "Enter with: ngc exec"
+  info "Enter with: mlenv exec"
 }
 
 cmd_exec() {
   check_docker
   
   if ! container_running; then
-    die "Container not running. Start with: ngc up"
+    die "Container not running. Start with: mlenv up"
   fi
   
   if [ -n "$EXEC_CMD" ]; then
@@ -420,14 +420,14 @@ cmd_status() {
 }
 
 cmd_list() {
-  info "NGC Containers Across All Projects"
+  info "MLEnv Containers Across All Projects"
   echo ""
   
   local containers
-  containers=$(docker ps -a --filter "name=ngc-" --format "{{.Names}}" 2>/dev/null || true)
+  containers=$(docker ps -a --filter "name=mlenv-" --format "{{.Names}}" 2>/dev/null || true)
   
   if [ -z "$containers" ]; then
-    info "No NGC containers found"
+    info "No MLEnv containers found"
     return 0
   fi
   
@@ -436,7 +436,7 @@ cmd_list() {
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   
   # List containers
-  docker ps -a --filter "name=ngc-" --format "{{.Names}}\t{{.Status}}\t{{.Image}}" | while IFS=$'\t' read -r name status image; do
+  docker ps -a --filter "name=mlenv-" --format "{{.Names}}\t{{.Status}}\t{{.Image}}" | while IFS=$'\t' read -r name status image; do
     # Truncate long names/images
     name_short="${name:0:39}"
     image_short="${image:0:19}"
@@ -450,14 +450,14 @@ cmd_list() {
   total=$(echo "$containers" | wc -l)
   info "Total: $total containers"
   echo ""
-  info "Tip: Use 'ngc clean --containers' to remove stopped containers"
+  info "Tip: Use 'mlenv clean --containers' to remove stopped containers"
 }
 
 cmd_jupyter() {
   check_docker
   
   if ! container_running; then
-    die "Container not running. Start with: ngc up --port 8888:8888"
+    die "Container not running. Start with: mlenv up --port 8888:8888"
   fi
   
   log "▶ Starting Jupyter Lab on port 8888"
@@ -501,7 +501,7 @@ cmd_clean() {
     done
   fi
   
-  log "▶ Cleaning NGC artifacts"
+  log "▶ Cleaning MLEnv artifacts"
   echo ""
   
   # Clean logs
@@ -517,9 +517,9 @@ cmd_clean() {
   # Clean old containers
   if [ "$clean_containers" = true ]; then
     echo ""
-    info "Searching for stopped NGC containers..."
+    info "Searching for stopped MLEnv containers..."
     local stopped_containers
-    stopped_containers=$(docker ps -a --filter "name=ngc-" --filter "status=exited" --format "{{.Names}}" 2>/dev/null || true)
+    stopped_containers=$(docker ps -a --filter "name=mlenv-" --filter "status=exited" --format "{{.Names}}" 2>/dev/null || true)
     
     if [ -n "$stopped_containers" ]; then
       echo ""
@@ -539,7 +539,7 @@ cmd_clean() {
         info "Skipped container cleanup"
       fi
     else
-      info "No stopped NGC containers found"
+      info "No stopped MLEnv containers found"
     fi
   fi
   
@@ -561,10 +561,10 @@ cmd_clean() {
 }
 
 cmd_version() {
-  echo "NGC Container Manager v${VERSION}"
+  echo "MLEnv - ML Environment Manager v${VERSION}"
   echo "Copyright (c) 2025"
   echo ""
-  echo "Check for updates: https://github.com/your-username/ngc-manager"
+  echo "Check for updates: https://github.com/your-username/mlenv"
 }
 
 cmd_login() {
@@ -596,7 +596,7 @@ cmd_login() {
     success "NGC authentication complete!"
     info "You can now pull private images from $NGC_REGISTRY"
     echo ""
-    info "Example: ngc up --image nvcr.io/your-org/your-image:tag"
+    info "Example: mlenv up --image nvcr.io/your-org/your-image:tag"
   else
     die "Login failed. Please check your API key and try again."
   fi
@@ -617,15 +617,15 @@ cmd_logout() {
   fi
   
   echo ""
-  info "You'll need to run 'ngc login' again to access private images"
+  info "You'll need to run 'mlenv login' again to access private images"
 }
 
 cmd_help() {
   cat <<EOF
-NGC Container Manager - GPU Development Environment
+MLEnv - ML Environment Manager - GPU Development Environment
 
 USAGE:
-  ngc <command> [options]
+  mlenv <command> [options]
 
 COMMANDS:
   login       Authenticate with NGC for private images
@@ -636,10 +636,10 @@ COMMANDS:
   restart     Restart container
   rm          Remove container (keeps your code safe)
   status      Show container status and GPU info
-  list        List all NGC containers across projects
+  list        List all MLEnv containers across projects
   jupyter     Start Jupyter Lab on port 8888
   logs        View debug logs
-  clean       Remove NGC artifacts
+  clean       Remove MLEnv artifacts
   version     Show version information
   help        Show this help
 
@@ -660,44 +660,44 @@ OPTIONS (for 'exec' command):
 
 EXAMPLES:
   # First time setup - authenticate with NGC
-  ngc login
+  mlenv login
 
   # Basic setup
-  ngc up
-  ngc exec
+  mlenv up
+  mlenv exec
 
   # Full setup with Jupyter
-  ngc up --requirements requirements.txt --port 8888:8888,6006:6006 --verbose
+  mlenv up --requirements requirements.txt --port 8888:8888,6006:6006 --verbose
   ngc jupyter
 
   # Use private NGC image
-  ngc up --image nvcr.io/your-org/your-private-image:latest
+  mlenv up --image nvcr.io/your-org/your-private-image:latest
 
   # Run specific command
-  ngc exec -c "python train.py --epochs 10"
+  mlenv exec -c "python train.py --epochs 10"
 
   # Use specific GPUs
-  ngc up --gpu 0,1
+  mlenv up --gpu 0,1
 
   # Development workflow
-  ngc up --env-file .env --port 8888:8888
-  ngc exec
+  mlenv up --env-file .env --port 8888:8888
+  mlenv exec
   # ... do work ...
   ngc down
 
   # Clean old containers
-  ngc clean --containers
+  mlenv clean --containers
 
   # Full cleanup
-  ngc clean --all
+  mlenv clean --all
 
   # Clean restart
   ngc rm
-  ngc up --force-requirements
+  mlenv up --force-requirements
 
 CLEAN OPTIONS:
   --logs              Remove log files (default)
-  --containers        Remove stopped NGC containers
+  --containers        Remove stopped MLEnv containers
   --images            Remove dangling Docker images
   --all               Clean everything
 
@@ -773,7 +773,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     *)
-      die "Unknown option: $1. Use 'ngc help' for usage."
+      die "Unknown option: $1. Use 'mlenv help' for usage."
       ;;
   esac
 done
@@ -795,6 +795,6 @@ case "$command" in
   version|--version|-v)  cmd_version ;;
   help|--help|-h)  cmd_help ;;
   *)
-    die "Unknown command: $command. Use 'ngc help' for usage."
+    die "Unknown command: $command. Use 'mlenv help' for usage."
     ;;
 esac
