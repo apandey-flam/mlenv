@@ -58,10 +58,12 @@ export MLENV_LOG_DIR="$LOG_DIR"
 # Commands implementation using new engine
 
 cmd_up() {
+    engine_ensure_container_adapter
     check_requirements_file
     
     # Check NGC authentication if needed
     if [[ -n "$IMAGE" ]] && [[ "$IMAGE" == *"nvcr.io"* ]] && [[ "$IMAGE" != *"/nvidia/"* ]]; then
+        engine_ensure_registry_adapter
         if ! ngc_auth_registry_is_authenticated; then
             error "Private NGC image requires authentication"
             info "Run: mlenv login"
@@ -132,12 +134,17 @@ cmd_up() {
 }
 
 cmd_exec() {
+    engine_ensure_container_adapter
     if ! container_is_running "$CONTAINER_NAME"; then
         die "Container not running. Start with: mlenv up"
     fi
     
     local exec_args=()
-    exec_args+=("-it")
+    
+    # Only use -it for interactive sessions, not for command execution
+    if [[ -z "$EXEC_CMD" ]]; then
+        exec_args+=("-it")
+    fi
     
     # Determine user for exec
     if [[ "$RUN_AS_USER" == "true" ]]; then
@@ -157,6 +164,7 @@ cmd_exec() {
 }
 
 cmd_down() {
+    engine_ensure_container_adapter
     if container_is_running "$CONTAINER_NAME"; then
         log "■ Stopping container"
         container_stop "$CONTAINER_NAME"
@@ -167,6 +175,7 @@ cmd_down() {
 }
 
 cmd_rm() {
+    engine_ensure_container_adapter
     if container_exists "$CONTAINER_NAME"; then
         log "✖ Removing container (your code on host is safe)"
         container_remove "$CONTAINER_NAME"
@@ -196,6 +205,7 @@ cmd_logs() {
 }
 
 cmd_status() {
+    engine_ensure_container_adapter
     local status=$(container_get_status "$CONTAINER_NAME")
     
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -211,10 +221,12 @@ cmd_status() {
 }
 
 cmd_login() {
+    engine_ensure_registry_adapter
     ngc_auth_registry_login ""
 }
 
 cmd_logout() {
+    engine_ensure_registry_adapter
     ngc_auth_registry_logout
 }
 
@@ -263,6 +275,7 @@ find_jupyter_port() {
 }
 
 cmd_jupyter() {
+    engine_ensure_container_adapter
     # Determine which port to use (default to 8888 if not specified)
     local container_port="${JUPYTER_PORT:-8888}"
     local default_ports="${container_port}:${container_port}"
@@ -406,6 +419,7 @@ cmd_jupyter() {
 }
 
 cmd_config() {
+    engine_init_minimal
     local subcmd="${1:-show}"
     shift || true
     
@@ -436,7 +450,7 @@ cmd_config() {
 cmd_version() {
     echo "MLEnv - ML Environment Manager v${VERSION}"
     echo ""
-    engine_get_info
+    echo "Type 'mlenv help' for usage information"
 }
 
 cmd_help() {
@@ -628,10 +642,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Initialize engine
-engine_init
+# Commands that don't need full initialization will use lazy loading
+# No pre-initialization needed here - commands will handle it themselves
 
-# Override config with command-line options
+# Override config with command-line options (will be used after init)
 [[ -n "$IMAGE" ]] && MLENV_DEFAULT_IMAGE="$IMAGE"
 [[ -n "$GPU_DEVICES" ]] && export MLENV_GPU_DEVICES="$GPU_DEVICES"
 [[ -n "$PORTS" ]] && export MLENV_PORTS="$PORTS"

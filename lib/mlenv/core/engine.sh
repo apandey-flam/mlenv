@@ -28,8 +28,10 @@ source "${MLENV_LIB}/ports/auth-port.sh"
 export MLENV_ACTIVE_CONTAINER_ADAPTER=""
 export MLENV_ACTIVE_REGISTRY_ADAPTER=""
 export MLENV_INITIALIZED=false
+export MLENV_CONTAINER_ADAPTER_LOADED=false
+export MLENV_REGISTRY_ADAPTER_LOADED=false
 
-# Initialize MLEnv engine
+# Initialize MLEnv engine (full initialization - loads all adapters)
 engine_init() {
     vlog "Initializing MLEnv Engine v2.0.0..."
     
@@ -51,6 +53,61 @@ engine_init() {
     
     MLENV_INITIALIZED=true
     vlog "MLEnv Engine initialized successfully"
+}
+
+# Minimal initialization (config only, no adapters)
+engine_init_minimal() {
+    if [[ "$MLENV_INITIALIZED" == "true" ]]; then
+        return 0
+    fi
+    
+    vlog "Initializing MLEnv (minimal mode)..."
+    
+    # Set defaults
+    config_set_defaults
+    
+    # Load configuration
+    config_init
+    
+    # Validate configuration
+    config_validate_all
+    config_sanitize_all
+    
+    # Apply configuration to environment
+    engine_apply_config
+    
+    MLENV_INITIALIZED=true
+    vlog "MLEnv minimal initialization complete"
+}
+
+# Ensure container adapter is loaded (lazy loading)
+engine_ensure_container_adapter() {
+    if [[ "$MLENV_CONTAINER_ADAPTER_LOADED" == "true" ]]; then
+        return 0
+    fi
+    
+    if [[ "$MLENV_INITIALIZED" != "true" ]]; then
+        engine_init_minimal
+    fi
+    
+    local container_adapter=$(config_get "container.adapter" "docker")
+    engine_load_container_adapter "$container_adapter"
+    MLENV_CONTAINER_ADAPTER_LOADED=true
+}
+
+# Ensure registry adapter is loaded (lazy loading)
+engine_ensure_registry_adapter() {
+    if [[ "$MLENV_REGISTRY_ADAPTER_LOADED" == "true" ]]; then
+        return 0
+    fi
+    
+    if [[ "$MLENV_INITIALIZED" != "true" ]]; then
+        engine_init_minimal
+    fi
+    
+    local registry_adapter=$(config_get "registry.default" "ngc")
+    engine_load_registry_adapter "$registry_adapter"
+    MLENV_REGISTRY_ADAPTER_LOADED=true
 }
 
 # Apply configuration to environment variables
@@ -116,7 +173,7 @@ engine_load_container_adapter() {
     fi
     
     export MLENV_ACTIVE_CONTAINER_ADAPTER="$adapter"
-    success "Container adapter loaded: $adapter"
+    vlog "Container adapter loaded: $adapter"
 }
 
 # Load registry adapter
@@ -144,7 +201,7 @@ engine_load_registry_adapter() {
     fi
     
     export MLENV_ACTIVE_REGISTRY_ADAPTER="$adapter"
-    success "Registry adapter loaded: $adapter"
+    vlog "Registry adapter loaded: $adapter"
 }
 
 # Check if engine is initialized
